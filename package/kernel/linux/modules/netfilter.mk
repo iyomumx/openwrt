@@ -598,7 +598,7 @@ $(eval $(call KernelPackage,ipt-hashlimit))
 define KernelPackage/ipt-connlimit
   SUBMENU:=$(NF_MENU)
   TITLE:=Netfilter connlimit match
-  DEPENDS:=+kmod-ipt-core
+  DEPENDS:=+kmod-ipt-conntrack
   KCONFIG:=$(KCONFIG_IPT_CONNLIMIT)
   FILES:=$(LINUX_DIR)/net/netfilter/xt_connlimit.ko
   AUTOLOAD:=$(call AutoProbe,xt_connlimit)
