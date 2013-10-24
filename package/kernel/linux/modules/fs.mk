@@ -121,6 +121,25 @@ endef
 $(eval $(call KernelPackage,fs-ext4))
 
 
+define KernelPackage/fs-f2fs
+  SUBMENU:=$(FS_MENU)
+  TITLE:=F2FS filesystem support (EXPERIMENTAL)
+  KCONFIG:=\
+	CONFIG_F2FS_FS \
+	CONFIG_F2FS_FS_POSIX_ACL=y \
+	CONFIG_F2FS_FS_XATTR=y \
+	CONFIG_F2FS_STAT_FS=y
+  FILES:=\
+	$(LINUX_DIR)/fs/f2fs/f2fs.ko
+  AUTOLOAD:=$(call AutoLoad,30,f2fs,1)
+endef
+
+define KernelPackage/fs-f2fs/description
+ Kernel module for F2FS filesystem support (EXPERIMENTAL)
+endef
+
+$(eval $(call KernelPackage,fs-f2fs))
+
 define KernelPackage/fuse
   SUBMENU:=$(FS_MENU)
   TITLE:=FUSE (Filesystem in Userspace) support
