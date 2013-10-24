@@ -206,6 +206,19 @@ iptables extensions for hashlimit matching
 
 endef
 
+define Package/iptables-mod-connlimit
+$(call Package/iptables/Module, +kmod-ipt-connlimit)
+  TITLE:=connlimit matching
+endef
+
+define Package/iptables-mod-connlimit/description
+iptables extensions for connlimit matching
+
+ Matches:
+  - connlimit
+
+endef
+
 define Package/iptables-mod-iprange
 $(call Package/iptables/Module, +kmod-ipt-iprange)
   TITLE:=IP range extension
@@ -453,6 +466,7 @@ $(eval $(call BuildPlugin,iptables-mod-nat-extra,$(IPT_NAT_EXTRA-m)))
 $(eval $(call BuildPlugin,iptables-mod-iprange,$(IPT_IPRANGE-m)))
 $(eval $(call BuildPlugin,iptables-mod-ulog,$(IPT_ULOG-m)))
 $(eval $(call BuildPlugin,iptables-mod-hashlimit,$(IPT_HASHLIMIT-m)))
+$(eval $(call BuildPlugin,iptables-mod-connlimit,$(IPT_CONNLIMIT-m)))
 $(eval $(call BuildPlugin,iptables-mod-led,$(IPT_LED-m)))
 $(eval $(call BuildPlugin,iptables-mod-tproxy,$(IPT_TPROXY-m)))
 $(eval $(call BuildPlugin,iptables-mod-tee,$(IPT_TEE-m)))

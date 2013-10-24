@@ -594,3 +594,19 @@ define KernelPackage/ipt-hashlimit/description
 endef
 
 $(eval $(call KernelPackage,ipt-hashlimit))
+
+define KernelPackage/ipt-connlimit
+  SUBMENU:=$(NF_MENU)
+  TITLE:=Netfilter connlimit match
+  DEPENDS:=+kmod-ipt-core
+  KCONFIG:=$(KCONFIG_IPT_CONNLIMIT)
+  FILES:=$(LINUX_DIR)/net/netfilter/xt_connlimit.ko
+  AUTOLOAD:=$(call AutoProbe,xt_connlimit)
+  $(call KernelPackage/ipt)
+endef
+
+define KernelPackage/ipt-connlimit/description
+ Kernel modules support for the connlimit bucket match module
+endef
+
+$(eval $(call KernelPackage,ipt-connlimit))
