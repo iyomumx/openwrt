@@ -124,7 +124,6 @@ $(eval $(call KernelPackage,fs-ext4))
 define KernelPackage/fs-f2fs
   SUBMENU:=$(FS_MENU)
   TITLE:=F2FS filesystem support (EXPERIMENTAL)
-  DEPENDS:=BROKEN
   KCONFIG:=\
 	CONFIG_F2FS_FS \
 	CONFIG_F2FS_FS_POSIX_ACL=y \
