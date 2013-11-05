@@ -1,24 +1,22 @@
 #
-# Copyright (C) 2007-2011 OpenWrt.org
+# Copyright (C) 2013 OpenWrt.org
 #
 # This is free software, licensed under the GNU General Public License v2.
 # See /LICENSE for more information.
 #
 include $(TOPDIR)/rules.mk
 
-BOARD:=lantiq
-BOARDNAME:=Lantiq GPON/XWAY/SVIP
-FEATURES:=squashfs
-SUBTARGETS=xway xrx200 ase falcon
+ARCH:=arm
+BOARD:=sunxi
+BOARDNAME:=Allwinner SoC
+FEATURES:=targz
+SUBTARGETS=cortex-a7 cortex-a8
+MAINTAINER:=Luka Perkov <luka@openwrt.org>
 
 LINUX_VERSION:=3.10.18
 
-CPU_TYPE:=mips32r2
-
-define Target/Description
-	Build firmware images for Lantiq SoC
-endef
-
 include $(INCLUDE_DIR)/target.mk
+
+KERNELNAME:="zImage dtbs"
 
 $(eval $(call BuildTarget))
