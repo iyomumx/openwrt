@@ -56,6 +56,12 @@ define Package/block-mount/install
 	$(INSTALL_DATA) ./files/fstab.default $(1)/etc/uci-defaults/10-fstab
 	$(INSTALL_DATA) ./files/mount.hotplug $(1)/etc/hotplug.d/block/10-mount
 
+	$(INSTALL_DIR) $(1)/lib/functions
+	$(INSTALL_DATA) ./files/mount.sh $(1)/lib/functions/
+	$(INSTALL_DATA) ./files/block.sh $(1)/lib/functions/
+	$(INSTALL_DIR) $(1)/etc/hotplug.d/block
+	$(INSTALL_DATA) ./files/20-swap $(1)/etc/hotplug.d/block/
+	
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/sbin/block $(1)/sbin/
 	ln -s /sbin/block $(1)/usr/sbin/swapon
 	ln -s /sbin/block $(1)/usr/sbin/swapoff
