@@ -237,5 +237,5 @@ static void __init archer_c7_setup(void)
 	ath79_register_usb();
 }
 
-MIPS_MACHINE(ATH79_MACH_ARCHER_C7, "ARCHER-C7", "TP-LINK Archer C7",
+MIPS_MACHINE(ATH79_MACH_ARCHER_C7, "ARCHER-C7", "TP-LINK Archer C7 / TL-WDR7500",
 	     archer_c7_setup);

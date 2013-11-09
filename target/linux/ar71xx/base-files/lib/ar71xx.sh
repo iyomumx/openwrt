@@ -168,6 +168,12 @@ tplink_board_detect() {
 	"431000"*)
 		model="TP-Link TL-WDR4310"
 		;;
+	"75000001")
+		model="TP-Link ARCHER C7"
+		;;
+	"75000002")
+		model="TP-Link TL-WDR7500"
+		;;
 	"453000"*)
 		model="MERCURY MW4530R"
 		;;
@@ -231,7 +237,7 @@ ar71xx_board_detect() {
 	*AP83)
 		name="ap83"
 		;;
-	*"Archer C7")
+	*"Archer C7 / TL-WDR7500")
 		name="archer-c7"
 		;;
 	*"Atheros AP96")
