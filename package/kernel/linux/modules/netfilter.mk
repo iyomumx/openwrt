@@ -515,10 +515,10 @@ $(eval $(call KernelPackage,ebtables-watchers))
 define KernelPackage/nfnetlink
   SUBMENU:=$(NF_MENU)
   TITLE:=Netlink-based userspace interface
-  DEPENDS:=+kmod-ipt-core
-  FILES:=$(LINUX_DIR)/net/netfilter/nfnetlink.ko
-  KCONFIG:=CONFIG_NETFILTER_NETLINK
-  AUTOLOAD:=$(call AutoProbe,nfnetlink)
+  FILES:=$(foreach mod,$(NFNETLINK-m),$(LINUX_DIR)/net/$(mod).ko)
+  KCONFIG:=$(KCONFIG_NFNETLINK)
+  AUTOLOAD:=$(call AutoProbe,$(NFNETLINK-m))
+  $(call AddDepends/ipt)
 endef
 
 define KernelPackage/nfnetlink/description
@@ -536,14 +536,16 @@ endef
 
 define KernelPackage/nfnetlink-log
   TITLE:=Netfilter LOG over NFNETLINK interface
-  FILES:=$(LINUX_DIR)/net/netfilter/nfnetlink_log.ko
-  KCONFIG:=CONFIG_NETFILTER_NETLINK_LOG
-  AUTOLOAD:=$(call AutoProbe,nfnetlink_log)
+  FILES:=$(foreach mod,$(NFNETLINK_LOG-m),$(LINUX_DIR)/net/$(mod).ko)
+  KCONFIG:=$(KCONFIG_NFNETLINK_LOG)
+  AUTOLOAD:=$(call AutoLoad,45,$(notdir $(NFNETLINK_LOG-m)))
   $(call AddDepends/nfnetlink)
 endef
 
 define KernelPackage/nfnetlink-log/description
  Kernel modules support for logging packets via NFNETLINK
+ Includes:
+ - NFLOG
 endef
 
 $(eval $(call KernelPackage,nfnetlink-log))
@@ -551,14 +553,16 @@ $(eval $(call KernelPackage,nfnetlink-log))
 
 define KernelPackage/nfnetlink-queue
   TITLE:=Netfilter QUEUE over NFNETLINK interface
-  FILES:=$(LINUX_DIR)/net/netfilter/nfnetlink_queue.ko
-  KCONFIG:=CONFIG_NETFILTER_NETLINK_QUEUE
-  AUTOLOAD:=$(call AutoProbe,nfnetlink_queue)
+  FILES:=$(foreach mod,$(NFNETLINK_QUEUE-m),$(LINUX_DIR)/net/$(mod).ko)
+  KCONFIG:=$(KCONFIG_NFNETLINK_QUEUE)
+  AUTOLOAD:=$(call AutoLoad,45,$(notdir $(NFNETLINK_QUEUE-m)))
   $(call AddDepends/nfnetlink)
 endef
 
 define KernelPackage/nfnetlink-queue/description
  Kernel modules support for queueing packets via NFNETLINK
+ Includes:
+ - NFQUEUE
 endef
 
 $(eval $(call KernelPackage,nfnetlink-queue))
