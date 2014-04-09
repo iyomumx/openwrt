@@ -6,6 +6,12 @@ hostapd_add_rate() {
 	[ $sub -gt 0 ] && append $var "."
 }
 
+hostapd_add_basic_rate() {
+	local var="$1"
+	local val="$(($2 / 100))"
+	append $var "$val" " "
+}
+
 hostapd_append_wep_key() {
 	local var="$1"
 
@@ -18,12 +24,12 @@ hostapd_append_wep_key() {
 				zidx=$(($idx - 1))
 				json_get_var ckey "key${idx}"
 				[ -n "$ckey" ] && \
-					append network_data "wep_key${zidx}=$(prepare_key_wep "$ckey")" "$N$T"
+					append $var "wep_key${zidx}=$(prepare_key_wep "$ckey")" "$N$T"
 			done
 			wep_keyidx=$((key - 1))
 		;;
 		*)
-			append network_data "wep_key0=$(prepare_key_wep "$key")" "$N$T"
+			append $var "wep_key0=$(prepare_key_wep "$key")" "$N$T"
 		;;
 	esac
 }
@@ -57,7 +63,7 @@ hostapd_prepare_device_config() {
 	local base="${config%%.conf}"
 	local base_cfg=
 
-	json_get_vars country country_ie beacon_int basic_rate
+	json_get_vars country country_ie beacon_int
 
 	hostapd_set_log_options base_cfg
 
@@ -69,8 +75,9 @@ hostapd_prepare_device_config() {
 	[ -n "$hwmode" ] && append base_cfg "hw_mode=$hwmode" "$N"
 
 	local brlist= br
+	json_get_values basic_rate_list basic_rate
 	for br in $basic_rate_list; do
-		hostapd_add_rate brlist "$br"
+		hostapd_add_basic_rate brlist "$br"
 	done
 	[ -n "$brlist" ] && append base_cfg "basic_rates=$brlist" "$N"
 	[ -n "$beacon_int" ] && append base_cfg "beacon_int=$beacon_int" "$N"
@@ -82,11 +89,11 @@ EOF
 }
 
 hostapd_common_add_bss_config() {
-	config_add_string bssid ssid
-	config_add_boolean wds
+	config_add_string 'bssid:macaddr' 'ssid:string'
+	config_add_boolean wds wmm hidden
 
 	config_add_int maxassoc max_inactivity
-	config_add_boolean disassoc_low_ack ap_isolate short_preamble
+	config_add_boolean disassoc_low_ack isolate short_preamble
 
 	config_add_int \
 		wep_rekey eap_reauth_period \
@@ -95,9 +102,9 @@ hostapd_common_add_bss_config() {
 	config_add_boolean rsn_preauth auth_cache
 	config_add_int ieee80211w
 
-	config_add_string auth_server server
+	config_add_string 'auth_server:host' 'server:host'
 	config_add_string auth_secret
-	config_add_int auth_port port
+	config_add_int 'auth_port:port' 'port:port'
 
 	config_add_string acct_server
 	config_add_string acct_secret
@@ -111,15 +118,15 @@ hostapd_common_add_bss_config() {
 	config_add_string iapp_interface
 	config_add_string eap_type ca_cert client_cert identity auth priv_key priv_key_pwd
 
-	config_add_string key1 key2 key3 key4 password
+	config_add_string 'key1:wepkey' 'key2:wepkey' 'key3:wepkey' 'key4:wepkey' 'password:wpakey'
 
-	config_add_boolean wps_pushbutton wps_label ext_registrar
+	config_add_boolean wps_pushbutton wps_label ext_registrar wps_pbc_in_m1
 	config_add_string wps_device_type wps_device_name wps_manufacturer wps_pin
 
 	config_add_int ieee80211w_max_timeout ieee80211w_retry_timeout
 
-	config_add_string macfilter macfile
-	config_add_array maclist
+	config_add_string macfilter 'macfile:file'
+	config_add_array 'maclist:list(macaddr)'
 
 	config_add_int mcast_rate
 	config_add_array basic_rate
@@ -137,12 +144,12 @@ hostapd_set_bss_options() {
 
 	json_get_vars \
 		wep_rekey wpa_group_rekey wpa_pair_rekey wpa_master_rekey \
-		maxassoc max_inactivity disassoc_low_ack ap_isolate auth_cache \
-		wps_pushbutton wps_label ext_registrar \
+		maxassoc max_inactivity disassoc_low_ack isolate auth_cache \
+		wps_pushbutton wps_label ext_registrar wps_pbc_in_m1 \
 		wps_device_type wps_device_name wps_manufacturer wps_pin \
-		macfilter ssid wmm hidden
+		macfilter ssid wmm hidden short_preamble
 
-	set_default ap_isolate 0
+	set_default isolate 0
 	set_default maxassoc 0
 	set_default max_inactivity 0
 	set_default short_preamble 1
@@ -151,8 +158,8 @@ hostapd_set_bss_options() {
 	set_default wmm 1
 
 	append bss_conf "ctrl_interface=/var/run/hostapd"
-	if [ "$ap_isolate" -gt 0 ]; then
-		append bss_conf "ap_isolate=$ap_isolate" "$N"
+	if [ "$isolate" -gt 0 ]; then
+		append bss_conf "ap_isolate=$isolate" "$N"
 	fi
 	if [ "$maxassoc" -gt 0 ]; then
 		append bss_conf "max_num_sta=$maxassoc" "$N"
@@ -233,8 +240,9 @@ hostapd_set_bss_options() {
 		;;
 		wep)
 			local wep_keyidx=0
-			hostapd_append_wep_key network_data
-			append bss_conf "wep_default_key=$wep_key" "$N"
+			json_get_vars key
+			hostapd_append_wep_key bss_conf
+			append bss_conf "wep_default_key=$wep_keyidx" "$N"
 			[ -n "$wep_rekey" ] && append bss_conf "wep_rekey_period=$wep_rekey" "$N"
 		;;
 	esac
@@ -271,6 +279,7 @@ hostapd_set_bss_options() {
 		append bss_conf "device_name=$wps_device_name" "$N"
 		append bss_conf "manufacturer=$wps_manufacturer" "$N"
 		append bss_conf "config_methods=$config_methods" "$N"
+		[ "$wps_pbc_in_m1" -gt 0 ] && append bss_conf "pbc_in_m1=$wps_pbc_in_m1" "$N"
 	}
 
 	append bss_conf "ssid=$ssid" "$N"
@@ -293,7 +302,7 @@ hostapd_set_bss_options() {
 		[ "$auth_cache" = 0 ] && append bss_conf "disable_pmksa_caching=1" "$N"
 
 		# RSN -> allow management frame protection
-		json_get_var ieee80211w
+		json_get_var ieee80211w ieee80211w
 		case "$ieee80211w" in
 			[012])
 				json_get_vars ieee80211w_max_timeout ieee80211w_retry_timeout
@@ -446,12 +455,14 @@ wpa_supplicant_add_network() {
 
 	local wpa_key_mgmt="WPA-PSK"
 	local scan_ssid="1"
+	local freq
 
 	[[ "$_w_mode" = "adhoc" ]] && {
 		append network_data "mode=1" "$N$T"
-		[ -n "$fixed_frequency" ] || {
+		[ -n "$channel" ] && {
+			freq="$(get_freq "$phy" "$channel")"
 			append network_data "fixed_freq=1" "$N$T"
-			append network_data "frequency=$fixed_frequency" "$N$T"
+			append network_data "frequency=$freq" "$N$T"
 		}
 
 		scan_ssid=0
@@ -534,7 +545,7 @@ wpa_supplicant_add_network() {
 	[ -n "$mcast_rate" ] && {
 		local mc_rate=
 		hostapd_add_rate mc_rate "$mcast_rate"
-		[ -n "$mcast_rate" ] && append network_data "mcast_rate=$mcast_rate" "$N$T"
+		append network_data "mcast_rate=$mc_rate" "$N$T"
 	}
 
 	local ht_str

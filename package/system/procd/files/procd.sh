@@ -17,6 +17,7 @@
 #     data: arbitrary name/value pairs for detecting config changes (table)
 #     file: configuration files (array)
 #     netdev: bound network device (detects ifindex changes)
+#     limits: resource limits (passed to the process)
 #
 #   No space separation is done for arrays/tables - use one function argument per command line argument
 #
@@ -49,6 +50,7 @@ _procd_wrapper() {
 _procd_ubus_call() {
 	local cmd="$1"
 
+	[ -n "$PROCD_DEBUG" ] && json_dump >&2
 	ubus call service "$cmd" "$(json_dump)"
 	json_cleanup
 }
@@ -123,7 +125,7 @@ _procd_set_param() {
 	local type="$1"; shift
 
 	case "$type" in
-		env|data)
+		env|data|limits)
 			_procd_add_table "$type" "$@"
 		;;
 		command|netdev|file|respawn)
@@ -177,7 +179,7 @@ _procd_append_param() {
 
 	json_select "$type"
 	case "$type" in
-		env|data)
+		env|data|limits)
 			_procd_add_table_data "$@"
 		;;
 		command|netdev|file|respawn)
@@ -239,6 +241,8 @@ _procd_wrapper \
 	procd_close_trigger \
 	procd_open_instance \
 	procd_close_instance \
+	procd_open_validate \
+	procd_close_validate \
 	procd_set_param \
 	procd_append_param \
 	procd_add_validation \
